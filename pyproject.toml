@@ -1,0 +1,7 @@
+[project]
+name = "cli-url-shortener"
+version = "1.0.0"
+description = "A command line url shortener application"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = []
