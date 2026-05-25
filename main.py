@@ -6,22 +6,25 @@ BASE62_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 BASE_URL = "https://short/"
 DB_PATH = "urls.db"
 
+
 def encode_base62(num: int) -> str:
     if num == 0:
         return BASE62_CHARS[0]
-    
+
     result = []
     while num > 0:
         result.append(BASE62_CHARS[num % 62])
         num //= 62
-    
+
     return "".join(reversed(result))
+
 
 def decode_base62(code: str) -> int:
     result = 0
     for char in code:
         result = result * 62 + BASE62_CHARS.index(char)
     return result
+
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -37,6 +40,7 @@ def init_db():
 
     conn.commit()
     conn.close()
+
 
 def shorten_url(long_url: str) -> str:
     conn = sqlite3.connect(DB_PATH)
@@ -54,6 +58,7 @@ def shorten_url(long_url: str) -> str:
 
     return BASE_URL + encoded
 
+
 def get_long_url(encoded: str) -> str | None:
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -65,6 +70,7 @@ def get_long_url(encoded: str) -> str | None:
 
     return row[0] if row else None
 
+
 def url_is_valid(url: str):
     try:
         response = requests.head(url, timeout=5)
@@ -72,8 +78,30 @@ def url_is_valid(url: str):
     except requests.RequestException:
         return False
 
+
 def main():
-    url = input("Enter the url:\n")
+    while True:
+        user_input = input(
+            "Select an option:\nPress 1 to shorten an url.\nPress 2 to get long url.\nPress q to quit.\n"
+        )
+        if user_input == "1":
+            url = input("Enter url:\n")
+            if url_is_valid(url):
+                short_url = shorten_url(url)
+                print("The short url: ", short_url)
+            else:
+                print("Provided url is not valid or doesn't exist. Please try again.")
+        elif user_input == "2":
+            short_url = input("Enter short url:\n")
+            long_url = get_long_url(short_url)
+            if long_url:
+                print(long_url)
+            else:
+                print("This url doesn't exist.")
+        elif user_input == "q":
+            break
+        else:
+            print("Invalid input!\n")
     if url_is_valid(url):
         shorten_url(url)
     else:
@@ -81,7 +109,5 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
     init_db()
-    print(get_long_url("1"))
-    print(get_long_url("2"))
+    main()
